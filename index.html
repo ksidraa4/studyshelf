@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Study Shelf – Digital Library</title>
+
+<style>
+body{
+  margin:0;
+  font-family:'Poppins','Georgia',serif;
+  background:
+    linear-gradient(rgba(20,20,20,0.75), rgba(20,20,20,0.75)),
+    url("https://images.unsplash.com/photo-1524995997946-a1c2e315a42f");
+  background-size:cover;
+  background-attachment:fixed;
+  color:white;
+  font-style: italic;
+}
+
+header{
+  background:rgba(0,0,0,0.85);
+  padding:15px 30px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+header h2{color:#f1c40f;margin:0}
+header a{
+  color:white;
+  margin-left:15px;
+  text-decoration:none;
+  font-weight:600;
+}
+header a:hover{color:#f1c40f}
+
+section{padding:50px;min-height:80vh}
+.hidden{display:none}
+
+#home{text-align:center;margin-top:100px}
+#home h1{font-size:56px;color:#f1c40f}
+#home p{max-width:750px;margin:auto;font-size:20px}
+
+.form-box{
+  max-width:420px;
+  margin:auto;
+  background:rgba(255,255,255,0.15);
+  padding:30px;
+  border-radius:12px;
+  backdrop-filter:blur(6px);
+}
+.form-box h2{text-align:center;color:#f1c40f}
+
+input{
+  width:100%;
+  padding:12px;
+  margin:10px 0;
+  border:none;
+  border-radius:6px;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:6px;
+  background:#f1c40f;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{background:#d4ac0d}
+
+.book-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:22px;
+}
+.card{
+  background:rgba(255,255,255,0.18);
+  padding:18px;
+  border-radius:12px;
+}
+.card h3{color:#f1c40f}
+
+.card img{
+  width:100%;
+  height:260px;
+  object-fit:cover;
+  border-radius:10px;
+}
+
+footer{
+  background:rgba(0,0,0,0.9);
+  text-align:center;
+  padding:18px;
+  font-size:14px;
+}
+
+/* POPUPS */
+.popup{
+  display:none;
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.85);
+  padding:50px;
+  overflow:auto;
+}
+.popup h2{color:#f1c40f}
+.popupBox{
+  max-width:700px;
+  margin:auto;
+  background:#111;
+  padding:30px;
+  border-radius:12px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>📖 STUDY SHELF <br>– Digital Library</h2>
+  <nav>
+    <span id="welcome"></span>
+    <a href="#" onclick="showPage('home')">Home</a>
+    <a href="#" onclick="showPage('signup')">Signup</a>
+    <a href="#" onclick="showPage('login')">Login</a>
+    <a href="#" onclick="showPage('adminLogin')">Admin</a>
+    <a href="#" onclick="logout()">Logout</a>
+
+  </nav>
+</header>
+
+<section id="home">
+  <h1>Let’s Start</h1>
+  <p>
+    “A reader today, a leader tomorrow.”<br><br>
+    Start your journey into knowledge with Study Shelf.
+  </p>
+  <br>
+  <button onclick="startFlow()">Get Started</button>
+</section>
+
+<section id="signup" class="hidden">
+  <div class="form-box">
+    <h2>Create your account</h2>
+    <input id="su_name" placeholder="Full Name">
+    <input id="su_email" placeholder="Email">
+    <input id="su_pass" type="password" placeholder="Password">
+    <input id="su_cpass" type="password" placeholder="Confirm Password">
+    <button onclick="signup()">Signup</button>
+    <p id="signupMsg"></p>
+  </div>
+</section>
+
+<section id="login" class="hidden">
+  <div class="form-box">
+    <h2>Login</h2>
+    <input id="li_email" placeholder="Email">
+    <input id="li_pass" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </div>
+</section>
+<section id="adminLogin" class="hidden">
+  <div class="form-box">
+    <h2>Admin Login</h2>
+    <input id="admin_user" placeholder="Admin Username">
+    <input id="admin_pass" type="password" placeholder="Admin Password">
+    <button onclick="adminLogin()">Login</button>
+    <p id="adminMsg"></p>
+    <p style="font-size:14px; opacity:0.8; margin-top:10px;">
+  <b>Admin Username:</b> admin <br>
+  <b>Password:</b> admin123
+</p>
+
+  </div>
+</section>
+<section id="adminPanel" class="hidden">
+  <h2 style="color:#f1c40f">📊 User Book Records</h2>
+  <div id="adminRecords"></div>
+</section>
+
+<section id="books" class="hidden">
+  <h2 style="color:#f1c40f">Library Collection</h2>
+  <input placeholder="Search books..." onkeyup="searchBooks(this.value)">
+  <div id="bookList" class="book-grid"></div>
+</section>
+
+<div id="descPopup" class="popup">
+  <div class="popupBox">
+    <h2 id="descTitle"></h2>
+    <p id="descAuthor"></p>
+    <p id="descText"></p>
+    <button onclick="closeDesc()">Close</button>
+  </div>
+</div>
+
+<div id="downloadPopup" class="popup">
+  <div class="popupBox" style="text-align:center">
+    <h2>📥 Download Complete</h2>
+    <p id="downloadMsg"></p>
+    <button onclick="closeDownload()">OK</button>
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 STUDY SHELF – Digital Library</p>
+  <p>📧 Email: studyshelf.library@gmail.com</p>
+  <p>📞 Contact: +91 98765 43210</p>
+  <p>📸 Instagram: @studyshelf</p>
+</footer>
+<script>
+/* =====================
+   GLOBAL STATE
+===================== */
+let currentUser = JSON.parse(localStorage.getItem("session")) || null;
+let isAdmin = localStorage.getItem("activeRole") === "admin";
+
+
+/* =====================
+   STORAGE HELPERS
+===================== */
+const getUsers = () => JSON.parse(localStorage.getItem("users")) || [];
+const saveUsers = u => localStorage.setItem("users", JSON.stringify(u));
+
+const getLogs = () => JSON.parse(localStorage.getItem("logs")) || [];
+const saveLogs = l => localStorage.setItem("logs", JSON.stringify(l));
+
+/* =====================
+   PAGE CONTROL
+===================== */
+function showPage(page){
+
+  // 🔒 Protect admin pages
+  if((page === "adminLogin" || page === "adminPanel") && !isAdmin){
+    if(page === "adminLogin") {
+      // allow admin login page
+    } else {
+      alert("Admin access only");
+      return;
+    }
+  }
+
+  document.querySelectorAll("section").forEach(
+    s => s.classList.add("hidden")
+  );
+
+  document.getElementById(page).classList.remove("hidden");
+}
+
+function startFlow(){
+  showPage("signup");
+}
+
+function updateUI(){
+  const welcome = document.getElementById("welcome");
+  welcome.innerText = currentUser ? `Welcome, ${currentUser.name}` : "";
+}
+
+/* =====================
+   AUTH
+===================== */
+function signup(){
+  const users = getUsers();
+  users.push({
+    name: su_name.value,
+    email: su_email.value,
+    pass: su_pass.value
+  });
+  saveUsers(users);
+  showPage("login");
+}
+function login(){
+
+  // 🔒 Check active role LIVE from storage
+  if(localStorage.getItem("activeRole") === "admin"){
+    alert("Admin is already logged in. Please logout admin first.");
+    return;
+  }
+
+  const users = getUsers();
+  const user = users.find(
+    u => u.email === li_email.value && u.pass === li_pass.value
+  );
+
+  if(!user){
+    alert("Invalid credentials");
+    return;
+  }
+
+  // ✅ LOGIN USER
+  currentUser = user;
+  isAdmin = false;
+
+  localStorage.setItem("session", JSON.stringify(user));
+  localStorage.setItem("activeRole", "user");
+
+  updateUI();
+  loadBooks(books);
+  showPage("books");
+}
+function logout(){
+  localStorage.removeItem("session");
+  localStorage.removeItem("activeRole");
+
+  currentUser = null;
+  isAdmin = false;
+
+  updateUI();
+  showPage("home");
+}
+
+
+  
+
+/* =====================
+   ADMIN LOGIN (ONLY PLACE)
+===================== */
+function adminLogin(){
+
+  // 🔒 Check active role LIVE from storage
+  if(localStorage.getItem("activeRole") === "user"){
+    alert("A user is already logged in. Please logout user first.");
+    return;
+  }
+
+  if(admin_user.value === "admin" && admin_pass.value === "admin123"){
+
+    // ✅ LOGIN ADMIN
+    isAdmin = true;
+    currentUser = null;
+
+    localStorage.removeItem("session"); // remove user
+    localStorage.setItem("activeRole", "admin");
+
+    showPage("adminPanel");
+    loadAdminRecords();
+
+  } else {
+    adminMsg.innerText = "Invalid admin credentials";
+  }
+}
+
+
+
+/* =====================
+   ADMIN RECORDS (FIXED)
+===================== */
+function loadAdminRecords(){
+  const logs = getLogs();
+  adminRecords.innerHTML = "";
+
+  if(logs.length === 0){
+    adminRecords.innerHTML = "<p>No user activity yet</p>";
+    return;
+  }
+
+  logs.forEach(l => {
+    adminRecords.innerHTML += `
+      <div class="card">
+        <p><b>User:</b> ${l.user}</p>
+        <p><b>Book:</b> ${l.book}</p>
+        <p><b>Action:</b> ${l.action}</p>
+        <p><b>Time:</b> ${l.time}</p>
+      </div>
+    `;
+  });
+}
+
+/* =====================
+   LOG ACTIVITY
+===================== */
+function logActivity(book, action){
+  if(!currentUser) return;
+
+  const logs = getLogs();
+  logs.push({
+    user: currentUser.email,
+    book: book,
+    action: action,
+    time: new Date().toLocaleString()
+  });
+  saveLogs(logs);
+}
+
+/* =====================
+   BOOK FUNCTIONS
+===================== */
+/* =====================
+   BOOK DATA (ALL BOOKS)
+===================== */
+const books = [
+  {
+    id:1,
+    title:"The Upanishads for Awakening",
+    author:"Ancient Indian Sages",
+    category:"Spiritual Philosophy",
+    desc:"A profound collection of Upanishadic teachings.",
+    pdf:"The-Upanishads-for-Awakening.pdf",
+    cover:"https://images.unsplash.com/photo-1508672019048-805c876b67e2"
+  },
+  {
+    id:2,
+    title:"Dracula",
+    author:"Bram Stoker",
+    category:"Gothic Horror Novel",
+    desc:"A legendary Gothic horror novel.",
+    pdf:"Dracula.pdf",
+    cover:"https://images.unsplash.com/photo-1506459225024-1428097a7e18"
+  },
+  {
+    id:3,
+    title:"The Sahara",
+    author:"Sir Ranulph Fiennes",
+    category:"Travel & Adventure",
+    desc:"A gripping account of an epic expedition.",
+    pdf:"The-Sahara.pdf",
+    cover:"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee"
+  },
+  {
+    id:4,
+    title:"Man Alone",
+    author:"Sinclair Lewis",
+    category:"Psychological & Social Novel",
+    desc:"A deep psychological novel about isolation.",
+    pdf:"Man-Alone.pdf",
+    cover:"https://images.unsplash.com/photo-1500534623283-312aade485b7"
+  },
+  {
+    id:5,
+    title:"The Trojan Treasure Conspiracy",
+    author:"Robert L. Fitzgerald",
+    category:"Historical Mystery",
+    desc:"A fast-paced historical mystery.",
+    pdf:"The-Trojan-Treasure-Conspiracy.pdf",
+    cover:"https://images.unsplash.com/photo-1524492412937-b28074a5d7da"
+  },
+  {
+    id:6,
+    title:"The Time Machine",
+    author:"H. G. Wells",
+    category:"Science Fiction",
+    desc:"A groundbreaking science fiction novel.",
+    pdf:"The-Time-Machine.pdf",
+    cover:"https://images.unsplash.com/photo-1518770660439-4636190af475"
+  },
+  {
+    id:7,
+    title:"Persuasion",
+    author:"Jane Austen",
+    category:"Classic Romance",
+    desc:"A touching story of love and second chances.",
+    pdf:"Persuasion.pdf",
+    cover:"https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb"
+  },
+  {
+    id:8,
+    title:"The Sense of Beauty",
+    author:"George Santayana",
+    category:"Philosophy & Aesthetics",
+    desc:"A philosophical work examining beauty.",
+    pdf:"The-Sense-of-Beauty.pdf",
+    cover:"https://images.unsplash.com/photo-1496317899792-9d7dbcd928a1"
+  },
+  {
+    id:9,
+    title:"The Best Ghost Stories",
+    author:"Various Authors",
+    category:"Horror & Supernatural",
+    desc:"A spine-chilling collection of ghost stories.",
+    pdf:"The-Best-Ghost-Stories.pdf",
+    cover:"https://images.unsplash.com/photo-1509644851169-2acc08aa25b5"
+  },
+  {
+    id:10,
+    title:"The Grammar of English Grammars",
+    author:"Goold Brown",
+    category:"English Grammar",
+    desc:"A comprehensive reference book on grammar.",
+    pdf:"The-Grammar-of-English-Grammars.pdf",
+    cover:"https://images.unsplash.com/photo-1519682337058-a94d519337bc"
+  }
+];
+function loadBooks(list){
+  if(!Array.isArray(list)) return;   // 🛡 prevents forEach error
+
+  bookList.innerHTML = "";
+
+  list.forEach(b => {
+    bookList.innerHTML += `
+      <div class="card">
+        <img src="${b.cover}">
+        <h3>${b.title}</h3>
+        <p>${b.author}</p>
+        <p>${b.category}</p>
+        <button onclick="showDesc(${b.id})">ℹ Description</button>
+        <a href="${b.pdf}" target="_blank" onclick="logActivity('${b.title}','Opened Book')">
+          <button>📖 Open Book</button>
+        </a>
+        <a href="${b.pdf}" download onclick="showDownload('${b.title}')">
+          <button>⬇ Download PDF</button>
+        </a>
+      </div>
+    `;
+  });
+}
+
+function searchBooks(v){
+  loadBooks(books.filter(b =>
+    b.title.toLowerCase().includes(v.toLowerCase())
+  ));
+}
+
+function showDesc(id){
+  const b = books.find(x=>x.id===id);
+  descTitle.innerText=b.title;
+  descAuthor.innerText="Author: "+b.author;
+  descText.innerText=b.desc;
+  descPopup.style.display="block";
+}
+
+function closeDesc(){ descPopup.style.display="none"; }
+
+function showDownload(title){
+  logActivity(title,"Downloaded Book");
+  downloadMsg.innerText=`"${title}" downloaded successfully!`;
+  downloadPopup.style.display="block";
+}
+
+function closeDownload(){ downloadPopup.style.display="none"; }
+if(localStorage.getItem("activeRole") === "user" && currentUser){
+  updateUI();
+  loadBooks(books);
+  showPage("books");
+}
+
+if(localStorage.getItem("activeRole") === "admin"){
+  isAdmin = true;
+  showPage("adminPanel");
+  loadAdminRecords();
+}
+
+</script>
+
+
+</body>
+</html>
